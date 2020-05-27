@@ -1,0 +1,6 @@
+{
+    "camera_to_open": 1,
+    "image_directory": "./image_files",
+    "default_scene_name": "Live Gaming",
+    "target_scene_name": "Live Gaming (Map Covered)"
+}
