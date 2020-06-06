@@ -1,6 +1,10 @@
 {
-    "camera_to_open": 1,
-    "image_directory": "./image_files",
+    "monitor_to_capture": 1,
+    "image_directory": "./hll_map_open_detection/image_files",
+    "mask_file": "./hll_map_open_detection/mask.jpg",
     "default_scene_name": "Live Gaming",
-    "target_scene_name": "Live Gaming (Map Covered)"
+    "target_scene_name": "Live Gaming (Map Covered)",
+    "num_features_to_detect": 500,
+    "num_good_matches_required": 20,
+    "show_debug_window": false
 }

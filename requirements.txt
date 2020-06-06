@@ -1,2 +1,6 @@
 numpy==1.18.4
+obs-websocket-py==0.5.1
+opencv-contrib-python==4.2.0.34
 opencv-python==4.2.0.34
+six==1.15.0
+websocket-client==0.57.0

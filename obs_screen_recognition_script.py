@@ -2,13 +2,16 @@ from os import listdir
 from os.path import isfile, join
 import time
 import json
-import cv2
 from functools import partial
-
 import logging
-logging.basicConfig(level=logging.INFO)
+
 
 from obswebsocket import obsws, requests
+import numpy
+import cv2
+from mss import mss
+
+logging.basicConfig(level=logging.ERROR)
 
 host = "localhost"
 port = 4444
@@ -16,20 +19,32 @@ port = 4444
 print = partial(print, flush=True)
 
 currently_in_default_scene = False
-def execute_tick(video_capture, image_files_to_search_for, obs, default_scene_name, target_scene_name):
+def execute_tick(screen_capture, monitor_to_capture, image_mask, image_descriptors, feature_detector, feature_matcher, num_good_matches_required, obs, default_scene_name, target_scene_name, show_debug_window):
     global currently_in_default_scene
     try:
-        ret, frame = video_capture.read()
+        start_time = time.clock()
+        frame = numpy.array(screen_capture.grab(screen_capture.monitors[monitor_to_capture]))
+        masked_frame = cv2.bitwise_and(frame, frame, mask=image_mask)
         
-        if frame_contains_one_or_more_matching_images(frame, image_files_to_search_for):
+        image_is_in_frame, matches = frame_contains_one_or_more_matching_images(masked_frame, image_mask, image_descriptors, feature_detector, feature_matcher, num_good_matches_required, show_debug_window)
+
+        tick_time = None
+        if image_is_in_frame:
             if currently_in_default_scene:
                 obs.call(requests.SetCurrentScene(target_scene_name))
+                tick_time = round(time.clock() - start_time, 2)
+
                 currently_in_default_scene = False
         elif not currently_in_default_scene:
+            tick_time = round(time.clock() - start_time, 2)
+            time.sleep(0.1)
             obs.call(requests.SetCurrentScene(default_scene_name))
+            
             currently_in_default_scene = True
+        return (tick_time, matches)
     except Exception as e:
         print(e)
+    return (None, -1)
 
 def get_valid_camera_indices():
     # checks the first 10 indexes.
@@ -46,16 +61,28 @@ def get_valid_camera_indices():
     indices_cache = arr
     return indices_cache
 
-def frame_contains_one_or_more_matching_images(frame, image_files_to_search_for):
+def frame_contains_one_or_more_matching_images(frame, mask, image_descriptors, feature_detector, feature_matcher, num_good_matches_required, show_debug_window):
     if frame is not None:
-        for image in image_files_to_search_for:
-            result = cv2.matchTemplate(frame.copy(), image, cv2.TM_SQDIFF_NORMED)
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+        keypoints, keypoint_descriptors = feature_detector.detectAndCompute(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), mask)
 
-            print(min_val)
-            if min_val < 0.01:
-                return True
-    return False
+        for image_descriptor in image_descriptors:
+            matches = feature_matcher.knnMatch(keypoint_descriptors, image_descriptor, k=2)
+            # Apply ratio test
+            good = []
+            for m,n in matches:
+                if m.distance < 0.75*n.distance:
+                    good.append([m])
+
+            # print("Found {} good matches".format(len(good)))
+            if show_debug_window:
+                cv2.drawKeypoints(frame, keypoints, frame)
+                cv2.imshow("test", cv2.resize(frame, (0, 0), fx=0.5, fy=0.5))
+                cv2.waitKey(1)
+                print("Num matches: {}".format(len(good)))
+            
+            if len(good) > num_good_matches_required:
+                return (True, len(good))
+    return (False, len(good))
 
 def main():
     with open("obs_screen_recognition_settings.json") as settings_file:
@@ -63,44 +90,43 @@ def main():
 
     print("Running with settings:", application_settings)
     image_directory = application_settings["image_directory"]
-    camera_index = application_settings["camera_to_open"]
+    mask_file = application_settings["mask_file"]
+    monitor_to_capture = application_settings["monitor_to_capture"]
     default_scene_name = application_settings["default_scene_name"]
     target_scene_name = application_settings["target_scene_name"]
-
-    valid_camera_indices = get_valid_camera_indices()
-    print("Found cameras: ", valid_camera_indices)
-    if camera_index not in valid_camera_indices:
-        print("Chosen camera index ({}) not in list of valid cameras")
-        return
+    num_features_to_detect = application_settings["num_features_to_detect"]
+    num_good_matches_required = application_settings["num_good_matches_required"]
+    show_debug_window = application_settings["show_debug_window"]
 
     try:
-        video_capture = cv2.VideoCapture(camera_index, cv2.CAP_DSHOW)
-
-        # Record at 1080p
-        video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 2560)
-        video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 1440)
-
-        # Always get the latest frame
-        video_capture.set(cv2.CAP_PROP_BUFFERSIZE, 0)
-
-        image_files_to_search_for = [cv2.imread(join(image_directory, f)) for f in listdir(image_directory) if isfile(join(image_directory, f))]
+        image_files_to_search_for = [cv2.cvtColor(cv2.imread(join(image_directory, f)), cv2.COLOR_BGR2GRAY) for f in listdir(image_directory) if isfile(join(image_directory, f))]
+        image_mask = cv2.imread(mask_file, cv2.IMREAD_GRAYSCALE)
     except Exception as e:
         print(e)
-    
+
     obs = obsws(host, port)
     obs.connect()
 
     scenes = obs.call(requests.GetSceneList())
     print("Detected scenes in OBS: " + str(scenes))
 
-    while True:
-        print("Starting tick")
-        try:
-            start_time = time.clock()
-            execute_tick(video_capture, image_files_to_search_for, obs, default_scene_name, target_scene_name)
-            print("Tick took {} seconds".format(round(time.clock() - start_time, 2)), flush=True)
-        except Exception as e:
-            print(e)
+    feature_detector = cv2.ORB_create(nfeatures=num_features_to_detect, scoreType=cv2.ORB_FAST_SCORE, nlevels=1, fastThreshold=10)
+    image_descriptors = [feature_detector.detectAndCompute(image, None)[1] for image in image_files_to_search_for]
+
+    feature_matcher = cv2.BFMatcher(cv2.NORM_HAMMING)
+
+    if show_debug_window:
+        cv2.startWindowThread()
+        cv2.namedWindow("test")
+
+    with mss() as screen_capture:
+        while True:
+            try:
+                tick_time, num_matches = execute_tick(screen_capture, monitor_to_capture, image_mask, image_descriptors, feature_detector, feature_matcher, num_good_matches_required, obs, default_scene_name, target_scene_name, show_debug_window)
+                if tick_time:
+                    print("Tick took {} seconds. Suggested OBS source delay: {}ms. Num good matches: {}".format(tick_time, round(tick_time, 2) * 1000, num_matches))
+            except Exception as e:
+                print(e)
 
 
 if __name__ == "__main__":
