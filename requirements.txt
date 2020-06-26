@@ -1,3 +1,4 @@
+mss==5.1.0
 numpy==1.18.4
 obs-websocket-py==0.5.1
 opencv-contrib-python==4.2.0.34
