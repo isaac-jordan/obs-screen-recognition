@@ -14,11 +14,11 @@ The hll_map_open_detection folder contains images which are always displayed whe
 
 ## Usage
 1. Clone/download repository and extract into any folder (e.g. Downloads)
-2. Install Python 3.6. Click "Add Python 3.6 to PATH at the bottom".
+2. Install Python 3.6. **Click "Add Python 3.6 to PATH at the bottom".**
 3. Install a terminal app if you don't already have one e.g. [Git Bash](https://gitforwindows.org/)
 4. Open up your terminal
 5. Navigate to where you extracted this repository (e.g. `cd Downloads/obs-screen-recognition`)
-4. Install the dependencies using pip: `pip install -r requirements.txt`
+4. Install the dependencies using pip in your terminal: `pip install -r requirements.txt`
 5. Install the [obs-websocket plugin](https://obsproject.com/forum/resources/obs-websocket-remote-control-obs-studio-from-websockets.466/) for OBS (Windows Installer works fine)
 6. Configure the settings in obs_screen_recognition_settings.json:
     - **monitor_to_capture**: If you have multiple monitors this specifies which one should be used.
