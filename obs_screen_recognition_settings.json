@@ -1,7 +1,7 @@
 {
     "monitor_to_capture": 1,
-    "image_directory": "./hll_map_open_detection/image_files",
-    "mask_file": "./hll_map_open_detection/mask.jpg",
+    "image_directory": "./hll_map_open_detection/2560x1440",
+    "mask_file": "./hll_map_open_detection/mask-2560x1440.jpg",
     "default_scene_name": "Live Gaming",
     "target_scene_name": "Live Gaming (Map Covered)",
     "num_features_to_detect": 500,
