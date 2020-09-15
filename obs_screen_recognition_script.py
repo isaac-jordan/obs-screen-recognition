@@ -88,7 +88,7 @@ def main():
     with open("obs_screen_recognition_settings.json") as settings_file:
         application_settings = json.load(settings_file)
 
-    if not application_settings["screen_format"] in ["1440p","1080p"]:
+    if application_settings["screen_format"] not in ["1440p","1080p"]:
         println("Only 1440p or 1080p screen formats currently supported")
         exit(1)
 
