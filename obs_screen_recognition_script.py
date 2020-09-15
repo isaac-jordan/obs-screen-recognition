@@ -88,9 +88,13 @@ def main():
     with open("obs_screen_recognition_settings.json") as settings_file:
         application_settings = json.load(settings_file)
 
+    if not application_settings["screen_format"] in ["1440p","1080p"]:
+        println("Only 1440p or 1080p screen formats currently supported")
+        exit(1)
+
     print("Running with settings:", application_settings)
-    image_directory = application_settings["image_directory"]
-    mask_file = application_settings["mask_file"]
+    image_directory = "./hll_map_open_detection/" + application_settings["screen_format"]
+    mask_file = "./hll_map_open_detection/mask-" + application_settings["screen_format"] + ".png"
     monitor_to_capture = application_settings["monitor_to_capture"]
     default_scene_name = application_settings["default_scene_name"]
     target_scene_name = application_settings["target_scene_name"]
