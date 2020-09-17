@@ -1,10 +1,10 @@
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, dirname, realpath
 import time
 import json
 from functools import partial
 import logging
-
+import click
 
 from obswebsocket import obsws, requests
 import numpy
@@ -84,8 +84,11 @@ def frame_contains_one_or_more_matching_images(frame, mask, image_descriptors, f
                 return (True, len(good))
     return (False, len(good))
 
-def main():
-    with open("obs_screen_recognition_settings.json") as settings_file:
+@click.command()
+@click.argument('game', type=click.Path(exists=True,file_okay=False, dir_okay=True))
+def main(game):
+    
+    with open(dirname(realpath(__file__)) + "/obs_screen_recognition_settings.json") as settings_file:
         application_settings = json.load(settings_file)
 
     if application_settings["screen_format"] not in ["1440p","1080p"]:
@@ -93,8 +96,8 @@ def main():
         exit(1)
 
     print("Running with settings:", application_settings)
-    image_directory = "./hll_map_open_detection/" + application_settings["screen_format"]
-    mask_file = "./hll_map_open_detection/mask-" + application_settings["screen_format"] + ".png"
+    image_directory = game + "/" + application_settings["screen_format"]
+    mask_file = game + "/mask-" + application_settings["screen_format"] + ".png"
     monitor_to_capture = application_settings["monitor_to_capture"]
     default_scene_name = application_settings["default_scene_name"]
     target_scene_name = application_settings["target_scene_name"]
