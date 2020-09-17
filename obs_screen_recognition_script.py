@@ -88,7 +88,7 @@ def frame_contains_one_or_more_matching_images(frame, mask, image_descriptors, f
 @click.argument('game', type=click.Path(exists=True,file_okay=False, dir_okay=True))
 def main(game):
     
-    with open(dirname(realpath(__file__)) + "/obs_screen_recognition_settings.json") as settings_file:
+    with open(dirname(realpath(__file__)) + "/settings.json") as settings_file:
         application_settings = json.load(settings_file)
 
     if application_settings["screen_format"] not in ["1440p","1080p"]:
