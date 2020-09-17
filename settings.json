@@ -4,6 +4,5 @@
     "default_scene_name": "Live Gaming",
     "target_scene_name": "Live Gaming (Map Covered)",
     "num_features_to_detect": 500,
-    "num_good_matches_required": 20,
-    "show_debug_window": false
+    "num_good_matches_required": 20
 }

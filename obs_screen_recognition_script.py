@@ -85,8 +85,9 @@ def frame_contains_one_or_more_matching_images(frame, mask, image_descriptors, f
     return (False, len(good))
 
 @click.command()
-@click.argument('game', type=click.Path(exists=True,file_okay=False, dir_okay=True))
-def main(game):
+@click.option('--show-debug-window', is_flag=True)
+@click.argument('resource-dir', type=click.Path(exists=True,file_okay=False, dir_okay=True))
+def main(resource_dir, show_debug_window):
     
     with open(dirname(realpath(__file__)) + "/settings.json") as settings_file:
         application_settings = json.load(settings_file)
@@ -96,14 +97,13 @@ def main(game):
         exit(1)
 
     print("Running with settings:", application_settings)
-    image_directory = game + "/" + application_settings["screen_format"]
-    mask_file = game + "/mask-" + application_settings["screen_format"] + ".png"
+    image_directory = resource_dir + "/" + application_settings["screen_format"]
+    mask_file = resource_dir + "/mask-" + application_settings["screen_format"] + ".png"
     monitor_to_capture = application_settings["monitor_to_capture"]
     default_scene_name = application_settings["default_scene_name"]
     target_scene_name = application_settings["target_scene_name"]
     num_features_to_detect = application_settings["num_features_to_detect"]
     num_good_matches_required = application_settings["num_good_matches_required"]
-    show_debug_window = application_settings["show_debug_window"]
 
     try:
         image_files_to_search_for = [cv2.cvtColor(cv2.imread(join(image_directory, f)), cv2.COLOR_BGR2GRAY) for f in listdir(image_directory) if isfile(join(image_directory, f))]
