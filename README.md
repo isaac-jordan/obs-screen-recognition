@@ -14,7 +14,7 @@ The hll_map_open_detection folder contains images which are always displayed whe
 
 ## Usage
 1. Clone/download repository and extract into any folder (e.g. Downloads)
-2. Install Python 3.6. **Click "Add Python 3.6 to PATH at the bottom".**
+2. Install Python 3.8. **Click "Add Python 3.8 to PATH at the bottom".**
 3. Install a terminal app if you don't already have one e.g. [Git Bash](https://gitforwindows.org/)
 4. Open up your terminal
 5. Navigate to where you extracted this repository (e.g. `cd Downloads/obs-screen-recognition`)

@@ -22,7 +22,7 @@ currently_in_default_scene = False
 def execute_tick(screen_capture, monitor_to_capture, image_mask, image_descriptors, feature_detector, feature_matcher, num_good_matches_required, obs, default_scene_name, target_scene_name, show_debug_window):
     global currently_in_default_scene
     try:
-        start_time = time.clock()
+        start_time = time.time()
         frame = numpy.array(screen_capture.grab(screen_capture.monitors[monitor_to_capture]))
         masked_frame = cv2.bitwise_and(frame, frame, mask=image_mask)
         
@@ -32,11 +32,11 @@ def execute_tick(screen_capture, monitor_to_capture, image_mask, image_descripto
         if image_is_in_frame:
             if currently_in_default_scene:
                 obs.call(requests.SetCurrentScene(target_scene_name))
-                tick_time = round(time.clock() - start_time, 2)
+                tick_time = round(time.time() - start_time, 2)
 
                 currently_in_default_scene = False
         elif not currently_in_default_scene:
-            tick_time = round(time.clock() - start_time, 2)
+            tick_time = round(time.time() - start_time, 2)
             time.sleep(0.1)
             obs.call(requests.SetCurrentScene(default_scene_name))
             
