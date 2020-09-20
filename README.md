@@ -10,7 +10,7 @@ This script is designed to recognise specific content on your screen and change 
 
 The initial use-case is to recognise when the map is open in Hell Let Loose, and change scenes in OBS so that map is not revealed to the live broadcast viewers.
 
-The hll_map_open_detection folder contains images which are always displayed when the HLL map is open, and a mask file to reduce the image down to where those images show. These images are designed for a 1440p monitor, and may need to be recreated for a different monitor size (especially the mask file). Use the "show_debug_window" setting to see what the script sees after applying the mask.
+The `hll` folder contains images which are always displayed when the HLL map is open, and a mask file to reduce the image down to where those images show. These images are organized for screen resolutions (currently only 1080p and 1440p). Use the "--show-debug-window" option to see what the script sees after applying the mask.
 
 ## Usage
 1. Clone/download repository and extract into any folder (e.g. Downloads)
@@ -23,7 +23,7 @@ The hll_map_open_detection folder contains images which are always displayed whe
 6. Start (or restart) OBS (Note that Streamlabs OBS will not work)
 6. Configure the settings in `settings.json`:
     - **monitor_to_capture**: If you have multiple monitors this specifies which one should be used.
-    - **screen_format**: Your screen format, either `1080p` (if you play in Full HD) or `1440p` (if you play in QUad HD). _Additional formats might be added with your help._
+    - **screen_format**: Your screen format, either `1080p` (if you play in Full HD) or `1440p` (if you play in Quad HD). _Additional formats might be added with your help._
     - **default_scene_name**: OBS scene to open when the script doesn't match an image (e.g. when the map isn't open in HLL)
     - **target_scene_name**: OBS scene to open when the script recognizes an image_directory image in the monitor contents (e.g. when you want the map hidden in HLL)
     - num_features_to_detect: Affects the accuracy and speed of the matching.
