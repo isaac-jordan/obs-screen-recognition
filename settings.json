@@ -1,0 +1,8 @@
+{
+    "monitor_to_capture": 1,
+    "screen_format": "1080p",
+    "default_scene_name": "Live Gaming",
+    "target_scene_name": "Live Gaming (Map Covered)",
+    "num_features_to_detect": 500,
+    "num_good_matches_required": 20
+}

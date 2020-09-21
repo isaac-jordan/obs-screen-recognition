@@ -5,3 +5,4 @@ opencv-contrib-python==4.2.0.34
 opencv-python==4.2.0.34
 six==1.15.0
 websocket-client==0.57.0
+click==7.1.2

@@ -1,10 +1,10 @@
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, dirname, realpath
 import time
 import json
 from functools import partial
 import logging
-
+import click
 
 from obswebsocket import obsws, requests
 import numpy
@@ -84,19 +84,26 @@ def frame_contains_one_or_more_matching_images(frame, mask, image_descriptors, f
                 return (True, len(good))
     return (False, len(good))
 
-def main():
-    with open("obs_screen_recognition_settings.json") as settings_file:
+@click.command()
+@click.option('--show-debug-window', is_flag=True)
+@click.argument('resource-dir', type=click.Path(exists=True,file_okay=False, dir_okay=True))
+def main(resource_dir, show_debug_window):
+    
+    with open(dirname(realpath(__file__)) + "/settings.json") as settings_file:
         application_settings = json.load(settings_file)
 
+    if application_settings["screen_format"] not in ["1440p","1080p"]:
+        println("Only 1440p or 1080p screen formats currently supported")
+        exit(1)
+
     print("Running with settings:", application_settings)
-    image_directory = application_settings["image_directory"]
-    mask_file = application_settings["mask_file"]
+    image_directory = resource_dir + "/" + application_settings["screen_format"]
+    mask_file = resource_dir + "/mask-" + application_settings["screen_format"] + ".png"
     monitor_to_capture = application_settings["monitor_to_capture"]
     default_scene_name = application_settings["default_scene_name"]
     target_scene_name = application_settings["target_scene_name"]
     num_features_to_detect = application_settings["num_features_to_detect"]
     num_good_matches_required = application_settings["num_good_matches_required"]
-    show_debug_window = application_settings["show_debug_window"]
 
     try:
         image_files_to_search_for = [cv2.cvtColor(cv2.imread(join(image_directory, f)), cv2.COLOR_BGR2GRAY) for f in listdir(image_directory) if isfile(join(image_directory, f))]
