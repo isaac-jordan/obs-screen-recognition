@@ -97,7 +97,8 @@ def frame_contains_one_or_more_matching_images(frame, mask, image_descriptors, f
 @click.command()
 @click.option('--show-debug-window', is_flag=True)
 @click.argument('resource-dir', type=click.Path(exists=True,file_okay=False, dir_okay=True))
-def main(resource_dir, show_debug_window):
+@click.option('--password')
+def main(resource_dir, password, show_debug_window):
     
     with open(dirname(realpath(__file__)) + "/settings.json") as settings_file:
         application_settings = json.load(settings_file)
@@ -121,8 +122,12 @@ def main(resource_dir, show_debug_window):
     except Exception as e:
         print(e)
 
-    obs = obsws(host, port)
-    obs.connect()
+    if password:
+        obs = obsws(host, port, password)
+        obs.connect()
+    else:
+        obs = obsws(host, port)
+        obs.connect()
 
     scenes = obs.call(requests.GetSceneList())
     print("Detected scenes in OBS: " + str(scenes))
