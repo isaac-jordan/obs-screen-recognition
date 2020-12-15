@@ -18,7 +18,7 @@ The `hll` folder contains images which are always displayed when the HLL map is 
 3. Install a terminal app if you don't already have one e.g. [Git Bash](https://gitforwindows.org/)
 4. Open up your terminal
 5. Navigate to where you extracted this repository (e.g. `cd Downloads/obs-screen-recognition`)
-4. Install the dependencies using pip in your terminal: `pip install -r requirements.txt`
+4. Install the dependencies using pip in your terminal: `python -m pip install -r requirements.txt`
 5. Install the [obs-websocket plugin](https://obsproject.com/forum/resources/obs-websocket-remote-control-obs-studio-from-websockets.466/) for OBS (Windows Installer works fine)
 6. Start (or restart) OBS (Note that Streamlabs OBS will not work)
 6. Configure the settings in `settings.json`:

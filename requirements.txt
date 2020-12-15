@@ -1,8 +1,8 @@
-mss==5.1.0
-numpy==1.18.4
+mss==6.1.0
+numpy==1.19.3
 obs-websocket-py==0.5.1
-opencv-contrib-python==4.2.0.34
-opencv-python==4.2.0.34
+opencv-contrib-python==4.4.0.46
+opencv-python==4.4.0.46
 six==1.15.0
 websocket-client==0.57.0
 click==7.1.2
