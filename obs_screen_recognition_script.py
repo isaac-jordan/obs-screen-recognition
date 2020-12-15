@@ -36,9 +36,12 @@ def execute_tick(screen_capture, monitor_to_capture, image_mask, image_descripto
 
                 currently_in_default_scene = False
         elif not currently_in_default_scene:
-            tick_time = round(time.time() - start_time, 2)
-            time.sleep(0.1)
+            assumed_render_delay_sec = 0.1
+            # Compensates for the render delay, otherwise the scene changes too fast
+            time.sleep(assumed_render_delay_sec)
+
             obs.call(requests.SetCurrentScene(default_scene_name))
+            tick_time = round((time.time() - start_time) - assumed_render_delay_sec, 2)
             
             currently_in_default_scene = True
         return (tick_time, matches)
@@ -61,6 +64,17 @@ def get_valid_camera_indices():
     indices_cache = arr
     return indices_cache
 
+def get_good_matches(matches, num_good_matches_required, show_debug_window):
+    good = []
+    for m,n in matches:
+        if m.distance < 0.75*n.distance:
+            good.append([m])
+
+            # Performance optimization when not in debug
+            if len(good) >= num_good_matches_required and not show_debug_window:
+                return good
+    return good
+
 def frame_contains_one_or_more_matching_images(frame, mask, image_descriptors, feature_detector, feature_matcher, num_good_matches_required, show_debug_window):
     if frame is not None:
         keypoints, keypoint_descriptors = feature_detector.detectAndCompute(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), mask)
@@ -68,19 +82,15 @@ def frame_contains_one_or_more_matching_images(frame, mask, image_descriptors, f
         for image_descriptor in image_descriptors:
             matches = feature_matcher.knnMatch(keypoint_descriptors, image_descriptor, k=2)
             # Apply ratio test
-            good = []
-            for m,n in matches:
-                if m.distance < 0.75*n.distance:
-                    good.append([m])
+            good = get_good_matches(matches, num_good_matches_required, show_debug_window)
 
-            # print("Found {} good matches".format(len(good)))
             if show_debug_window:
                 cv2.drawKeypoints(frame, keypoints, frame)
-                cv2.imshow("test", cv2.resize(frame, (0, 0), fx=0.5, fy=0.5))
+                cv2.imshow("obs-screen-recognition", cv2.resize(frame, (0, 0), fx=0.5, fy=0.5))
                 cv2.waitKey(1)
                 print("Num matches: {}".format(len(good)))
             
-            if len(good) > num_good_matches_required:
+            if len(good) >= num_good_matches_required:
                 return (True, len(good))
     return (False, len(good))
 
@@ -124,7 +134,7 @@ def main(resource_dir, show_debug_window):
 
     if show_debug_window:
         cv2.startWindowThread()
-        cv2.namedWindow("test")
+        cv2.namedWindow("obs-screen-recognition")
 
     with mss() as screen_capture:
         while True:
