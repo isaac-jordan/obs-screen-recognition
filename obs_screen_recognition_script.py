@@ -109,24 +109,12 @@ def main(resource_dir, password, show_debug_window):
     with open(dirname(realpath(__file__)) + "/settings.json") as settings_file:
         application_settings = json.load(settings_file)
 
-    if application_settings["screen_format"] not in ["1440p","1080p"]:
-        print("Only 1440p or 1080p screen formats currently supported")
-        exit(1)
-
     print("Running with settings:", application_settings)
-    image_directory = resource_dir + "/" + application_settings["screen_format"]
-    mask_file = resource_dir + "/mask-" + application_settings["screen_format"] + ".png"
     monitor_to_capture = application_settings["monitor_to_capture"]
     default_scene_name = application_settings["default_scene_name"]
     target_scene_name = application_settings["target_scene_name"]
     num_features_to_detect = application_settings["num_features_to_detect"]
     num_good_matches_required = application_settings["num_good_matches_required"]
-
-    try:
-        image_files_to_search_for = [cv2.cvtColor(cv2.imread(join(image_directory, f)), cv2.COLOR_BGR2GRAY) for f in listdir(image_directory) if isfile(join(image_directory, f))]
-        image_mask = cv2.imread(mask_file, cv2.IMREAD_GRAYSCALE)
-    except Exception as e:
-        print(e)
 
     if password:
         obs = obsws(host, port, password)
@@ -137,20 +125,26 @@ def main(resource_dir, password, show_debug_window):
     scenes = obs.call(requests.GetSceneList())
     print("Detected scenes in OBS: " + str(scenes))
 
-    feature_detector = cv2.ORB_create(nfeatures=num_features_to_detect, scoreType=cv2.ORB_FAST_SCORE, nlevels=1, fastThreshold=10)
-    image_descriptors = [feature_detector.detectAndCompute(image, None)[1] for image in image_files_to_search_for]
-
-    feature_matcher = cv2.BFMatcher(cv2.NORM_HAMMING)
-
     if show_debug_window:
         cv2.startWindowThread()
         cv2.namedWindow("obs-screen-recognition")
 
     with mss() as screen_capture:
         initial_frame_resolution = numpy.array(screen_capture.grab(screen_capture.monitors[monitor_to_capture])).shape[0:2]
+        screen_size = str(initial_frame_resolution[0]) + "p" # E.g. 1440p
+        print("Detected monitor resolution to be {}".format(screen_size))
         if initial_frame_resolution not in VALID_RESOLUTIONS:
             print(VALID_RESOLUTIONS_ERROR_MESSAGE.format(resolution = initial_frame_resolution))
             exit(1)
+    
+        image_directory = resource_dir + "/" + screen_size
+        mask_file = resource_dir + "/mask-" + screen_size + ".png"
+        image_files_to_search_for = [cv2.cvtColor(cv2.imread(join(image_directory, f)), cv2.COLOR_BGR2GRAY) for f in listdir(image_directory) if isfile(join(image_directory, f))]
+        image_mask = cv2.imread(mask_file, cv2.IMREAD_GRAYSCALE)
+
+        feature_detector = cv2.ORB_create(nfeatures=num_features_to_detect, scoreType=cv2.ORB_FAST_SCORE, nlevels=1, fastThreshold=10)
+        feature_matcher = cv2.BFMatcher(cv2.NORM_HAMMING)
+        image_descriptors = [feature_detector.detectAndCompute(image, None)[1] for image in image_files_to_search_for]
 
         while True:
             try:

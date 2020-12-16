@@ -23,11 +23,9 @@ The `hll` folder contains images which are always displayed when the HLL map is 
 6. Start (or restart) OBS (Note that Streamlabs OBS will not work)
 6. Configure the settings in `settings.json`:
     - **monitor_to_capture**: If you have multiple monitors this specifies which one should be used.
-    - **screen_format**: Your screen format, either `1080p` (if you play in Full HD) or `1440p` (if you play in Quad HD). _Additional formats might be added with your help._
     - **default_scene_name**: OBS scene to open when the script doesn't match an image (e.g. when the map isn't open in HLL)
     - **target_scene_name**: OBS scene to open when the script recognizes an image_directory image in the monitor contents (e.g. when you want the map hidden in HLL)
     - num_features_to_detect: Affects the accuracy and speed of the matching.
     - num_good_matches_required: Affects the false-match frequency
-    - show_debug_window: Set to true in order to view the screen that the script is trying to match image_directory images in
 7. Run the script: `obs_screen_recognition_script.py`, providing the folder where matching images are stored (currently only HLL game supported, so `$> python obs_screen_recognition_script.py ./hll`) tweak settings/images if necessary (to display what the script is seeing, use the `show-debug-window` flag as in `$> python obs_screen_recognition_script.py --show-debug-window ./hll`).
 8. Since the script is not instantaneous (it takes a small amount of time to recognise the images, and a small amount of time to contact OBS), it is probably a good idea to look at the script's _"Suggested OBS source delay"_ logs and set your game source delay (in OBS, right click on the source, select _Filters_ and add a _Render Delay_) to something around that. ~150ms seems to work well on the creator's hardware.
