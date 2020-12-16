@@ -16,6 +16,12 @@ logging.basicConfig(level=logging.ERROR)
 host = "localhost"
 port = 4444
 
+VALID_RESOLUTIONS_ERROR_MESSAGE = "The only valid resolutions are currently 1080p and 1440p. Your resolution is being detected as {resolution}."
+VALID_RESOLUTIONS = [
+    (1080, 1920),
+    (1440, 2560)
+]
+
 print = partial(print, flush=True)
 
 currently_in_default_scene = False
@@ -104,7 +110,7 @@ def main(resource_dir, password, show_debug_window):
         application_settings = json.load(settings_file)
 
     if application_settings["screen_format"] not in ["1440p","1080p"]:
-        println("Only 1440p or 1080p screen formats currently supported")
+        print("Only 1440p or 1080p screen formats currently supported")
         exit(1)
 
     print("Running with settings:", application_settings)
@@ -124,10 +130,9 @@ def main(resource_dir, password, show_debug_window):
 
     if password:
         obs = obsws(host, port, password)
-        obs.connect()
     else:
         obs = obsws(host, port)
-        obs.connect()
+    obs.connect()
 
     scenes = obs.call(requests.GetSceneList())
     print("Detected scenes in OBS: " + str(scenes))
@@ -142,6 +147,11 @@ def main(resource_dir, password, show_debug_window):
         cv2.namedWindow("obs-screen-recognition")
 
     with mss() as screen_capture:
+        initial_frame_resolution = numpy.array(screen_capture.grab(screen_capture.monitors[monitor_to_capture])).shape[0:2]
+        if initial_frame_resolution not in VALID_RESOLUTIONS:
+            print(VALID_RESOLUTIONS_ERROR_MESSAGE.format(resolution = initial_frame_resolution))
+            exit(1)
+
         while True:
             try:
                 tick_time, num_matches = execute_tick(screen_capture, monitor_to_capture, image_mask, image_descriptors, feature_detector, feature_matcher, num_good_matches_required, obs, default_scene_name, target_scene_name, show_debug_window)
