@@ -16,10 +16,11 @@ logging.basicConfig(level=logging.ERROR)
 host = "localhost"
 port = 4444
 
-VALID_RESOLUTIONS_ERROR_MESSAGE = "The only valid resolutions are currently 1080p and 1440p. Your resolution is being detected as {resolution}."
+VALID_RESOLUTIONS_ERROR_MESSAGE = "The only valid resolutions are currently 1080p, 1440p and 1200p. Your resolution is being detected as {resolution}."
 VALID_RESOLUTIONS = [
     (1080, 1920),
-    (1440, 2560)
+    (1440, 2560),
+    (1200, 1920)
 ]
 
 print = partial(print, flush=True)
